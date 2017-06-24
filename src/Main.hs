@@ -6,6 +6,8 @@ import Control.Applicative
 import Data.IORef
 import System.Exit
 
+import Mapa
+
 main :: IO ()
 main = do
     _ <- getArgsAndInitialize
@@ -16,19 +18,6 @@ main = do
     update rotation
     mainLoop
 
-cube :: IO ()
-cube = do
-    let color3f r g b = color $ Color3 r g (b :: GLfloat)
-        vertex3f x y z = vertex $ Vertex3 x y (z :: GLfloat)
-    clear [ColorBuffer]
-    renderPrimitive Quads $ do
-        color3f 1 0 0
-        vertex3f 0 0 0
-        vertex3f 0 0.95 0
-        vertex3f 1 1 0
-        vertex3f 1 0 0
-    flush
-
 display :: IORef GLfloat -> IO ()
 display rotation = do
     clear [ ColorBuffer]
@@ -37,7 +26,7 @@ display rotation = do
     -- rotate rotation' $ Vector3 0 0 (1::GLfloat)
     -- renderPrimitive Triangles $ mapM_ (\(x, y, z) -> vertex $ Vertex3 x y z) myPoints
     -- displayCubo
-    cube
+    mapa
     swapBuffers
 
 update :: IORef GLfloat -> IO ()
