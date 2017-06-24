@@ -5,6 +5,7 @@ import Graphics.UI.GLUT
 import Control.Applicative
 import Data.IORef
 import System.Exit
+import Graphics.UI.GLUT.Callbacks.Window
 
 import Mapa
 
@@ -16,6 +17,7 @@ main = do
     rotation <- newIORef 0.0
     displayCallback $= (display rotation)
     update rotation
+    attachMyKeyboardMouseCallback
     mainLoop
 
 display :: IORef GLfloat -> IO ()
@@ -35,6 +37,17 @@ update rotation = do
     rotation $= a + 1
     postRedisplay Nothing
     addTimerCallback 16 $ update rotation
+
+myKeyboardMouseCallback key keyState modifiers position =
+  case (key, keyState) of
+    (SpecialKey KeyRight, Up) -> putStrLn("Right")
+    (SpecialKey KeyLeft, Up) -> putStrLn("Left")
+    (SpecialKey KeyUp, Up) -> putStrLn("Up")
+    (SpecialKey KeyDown, Up) -> putStrLn("Down")
+
+    _ -> return () -- ignore other buttons
+
+attachMyKeyboardMouseCallback = keyboardMouseCallback $= Just myKeyboardMouseCallback
 
 myPoints :: [(GLfloat, GLfloat, GLfloat)]
 myPoints = [(sin(2*pi * k / 3), cos(2*pi * k / 3), 0.0) | k <- [1..3]]
