@@ -17,7 +17,7 @@ cabal-version:       >=1.10
 
 executable Arca
   main-is:             Main.hs
-  -- other-modules:       
+  -- other-modules:       Paths_sfml_demos
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10, SFML
   hs-source-dirs:      src
