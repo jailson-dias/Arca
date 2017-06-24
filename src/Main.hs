@@ -16,47 +16,32 @@ main = do
     update rotation
     mainLoop
 
-cube :: GLfloat -> IO ()
-cube w = do
-  renderPrimitive Quads $ do
-    vertex $ Vertex3 w w w
-    vertex $ Vertex3 w w (-w)
-    vertex $ Vertex3 w (-w) (-w)
-    vertex $ Vertex3 w (-w) w
-    vertex $ Vertex3 w w w
-    vertex $ Vertex3 w w (-w)
-    vertex $ Vertex3 (-w) w (-w)
-    vertex $ Vertex3 (-w) w w
-    vertex $ Vertex3 w w w
-    vertex $ Vertex3 w (-w) w
-    vertex $ Vertex3 (-w) (-w) w
-    vertex $ Vertex3 (-w) w w
-    vertex $ Vertex3 (-w) w w
-    vertex $ Vertex3 (-w) w (-w)
-    vertex $ Vertex3 (-w) (-w) (-w)
-    vertex $ Vertex3 (-w) (-w) w
-    vertex $ Vertex3 w (-w) w
-    vertex $ Vertex3 w (-w) (-w)
-    vertex $ Vertex3 (-w) (-w) (-w)
-    vertex $ Vertex3 (-w) (-w) w
-    vertex $ Vertex3 w w (-w)
-    vertex $ Vertex3 w (-w) (-w)
-    vertex $ Vertex3 (-w) (-w) (-w)
-    vertex $ Vertex3 (-w) w (-w)
+cube :: IO ()
+cube = do
+    let color3f r g b = color $ Color3 r g (b :: GLfloat)
+        vertex3f x y z = vertex $ Vertex3 x y (z :: GLfloat)
+    clear [ColorBuffer]
+    renderPrimitive Quads $ do
+        color3f 1 0 0
+        vertex3f 0 0 0
+        vertex3f 0 0.95 0
+        vertex3f 1 1 0
+        vertex3f 1 0 0
+    flush
 
 display :: IORef GLfloat -> IO ()
 display rotation = do
     clear [ ColorBuffer]
     loadIdentity
-    rotation' <- get rotation
-    rotate rotation' $ Vector3 0 0 (1::GLfloat)
-    renderPrimitive Triangles $ mapM_ (\(x, y, z) -> vertex $ Vertex3 x y z) myPoints
-    -- cube (520::GLfloat)
+    -- rotation' <- get rotation
+    -- rotate rotation' $ Vector3 0 0 (1::GLfloat)
+    -- renderPrimitive Triangles $ mapM_ (\(x, y, z) -> vertex $ Vertex3 x y z) myPoints
+    -- displayCubo
+    cube
     swapBuffers
 
 update :: IORef GLfloat -> IO ()
 update rotation = do
-    -- cube (520::GLfloat)
     a <- get rotation
     rotation $= a + 1
     postRedisplay Nothing
