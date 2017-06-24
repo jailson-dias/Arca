@@ -1,6 +1,8 @@
 module Mapa where
     import Graphics.Rendering.OpenGL hiding (($=))
     import Graphics.UI.GLUT
+    import System.IO.Unsafe
+    import System.Random
 
     type Cor = (GLfloat, GLfloat, GLfloat)
     type Vertice = (GLfloat, GLfloat)
@@ -10,6 +12,15 @@ module Mapa where
 
     cor :: GLfloat -> GLfloat -> GLfloat -> Cor
     cor r g b = (r, g, b)
+
+    cores :: [Cor]
+    cores = [
+        cor 0 0 0,
+        cor 1 0 0,
+        cor 0 1 0,
+        cor 0 0 1,
+        cor 1 1 1
+        ] 
 
     for :: Vertice -> Vertice -> Vertice -> Vertice -> [Cor] -> IO ()
     for v1 v2 v3 v4 [cor] = cube cor v1 v2 v3 v4
@@ -67,8 +78,18 @@ module Mapa where
         desenhaLinha (menos v1 0.1) (menos v2 0.1) (menos v3 0.1) (menos v4 0.1) (a-1)
             where menos = (\(vx,vy) y -> (vx, vy - y))
 
+    gerarCor :: Int -> [Int]
+    gerarCor 0 = []
+    gerarCor q = do 
+        -- cd <- randomRIO (0::Int, 4::Int)
+        let cd = unsafePerformIO (randomRIO (0::Int, 4::Int))
+        -- putStrLn (show cd)
+        cd : gerarCor (q-1)
+
     mapa :: IO ()
     mapa = do
+        cd <- randomRIO (1::Int, 10::Int)
+        putStrLn (show cd)
         clear [ColorBuffer]
         renderPrimitive Quads $ do
             desenhaLinha (vertice (-1) 1) (vertice (-1) 0.9) (vertice (-0.9) 0.9) (vertice (-0.9) 1) 20
