@@ -1,26 +1,32 @@
 module Mapa where
     import Graphics.Rendering.OpenGL hiding (($=))
     import Graphics.UI.GLUT
+    import Data.IORef
+    -- import Graphics.UI.GLUT.Callbacks.Window
+    -- import System.Exit
+    -- import Control.Applicative
     import System.IO.Unsafe
     import System.Random
 
     type Cor = (GLfloat, GLfloat, GLfloat)
     type Vertice = (GLfloat, GLfloat)
     
+    pinta = True
+
     vertice :: GLfloat -> GLfloat -> Vertice
     vertice x y = (x, y)
 
     cor :: GLfloat -> GLfloat -> GLfloat -> Cor
     cor r g b = (r, g, b)
 
-    cores :: [Cor]
-    cores = [
-        cor 0 0 0,
-        cor 1 0 0,
-        cor 0 1 0,
-        cor 0 0 1,
-        cor 1 1 1
-        ] 
+    -- cores :: [Cor]
+    -- cores = [
+    --     cor 0 0 0,
+    --     cor 1 0 0,
+    --     cor 0 1 0,
+    --     cor 0 0 1,
+    --     cor 1 1 1
+    --     ] 
 
 
     -- Desenha uma linha do mapa
@@ -36,61 +42,48 @@ module Mapa where
     desenhaMapa v1 v2 v3 v4 [cor] = linha v1 v2 v3 v4 cor
     desenhaMapa v1 v2 v3 v4 (cor:ls) = do 
         linha v1 v2 v3 v4 cor
-        -- linha v1 v2 v3 v4 [
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 1),
-        --         (cor 1 1 0),
-        --         (cor 1 1 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 1),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0),
-        --         (cor 1 0 0)
-        --         ]
         desenhaMapa (menos v1 0.1) (menos v2 0.1) (menos v3 0.1) (menos v4 0.1) ls
             where menos = (\(vx,vy) y -> (vx, vy - y))
     
-    getCores:: [[Int]] -> [[Cor]]
-    getCores [] = []
-    getCores (linha:ls) = [ cores!!c | c <- linha ] : getCores ls
+    -- getCores:: [[Int]] -> [[Cor]]
+    -- getCores [] = []
+    -- getCores (linha:ls) = [ cores!!c | c <- linha ] : getCores ls
 
     
     -- Gerar uma lista de numeros entre 0 e 4
-    randomLinha :: Int -> IO([Int])
-    randomLinha 0 = return []
-    randomLinha n = do
-        r  <- randomRIO (0,4)
-        rs <- randomLinha (n-1)
-        return (r:rs) 
+    -- randomLinha :: Int -> IO([Int])
+    -- randomLinha 0 = return []
+    -- randomLinha n = do
+    --     r  <- randomRIO (0,4)
+    --     rs <- randomLinha (n-1)
+    --     return (r:rs) 
 
-    randomMapa :: Int -> Int -> IO [[Int]]
-    randomMapa 0 l = return []
-    randomMapa n l = do
-        linha <- randomLinha l
-        mapa <- randomMapa (n-1) l
-        return (linha:mapa) 
+    -- randomMapa :: Int -> Int -> IO [[Int]]
+    -- randomMapa 0 l = return []
+    -- randomMapa n l = do
+    --     linha <- randomLinha l
+    --     mapa <- randomMapa (n-1) l
+    --     return (linha:mapa) 
 
 
     -- Desenha o mapa inicial do jogo
-    mapa :: IO ()
-    mapa = do
-        -- cd <- take 400 randomRIO (0::Int, 4::Int)
-        cd <- randomMapa 20 20
-        -- putStrLn (show cd)
+    mapa :: IORef [[Cor]] -> IO ()
+    mapa atualizar = do
+        cd <- get atualizar
+        -- putStrLn (a)
+        -- cd <- randomMapa 20 20
+        -- if a == 1 then 
+        --     do 
+        --         atualizar $= False
+        --         putStrLn "teste"
+        -- else 
+        --     do
+        --         putStrLn "nop"
+        --         return ()
+        -- putStrLn "depois"
         clear [ColorBuffer]
         renderPrimitive Quads $ do
-            desenhaMapa (vertice (-1) 1) (vertice (-1) 0.9) (vertice (-0.9) 0.9) (vertice (-0.9) 1) (getCores cd)
+            desenhaMapa (vertice (-1) 1) (vertice (-1) 0.9) (vertice (-0.9) 0.9) (vertice (-0.9) 1) cd
         flush
 
     -- Utilizado para chamar color3f em vez de chamar color $ Color3 r g b
