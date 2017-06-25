@@ -7,13 +7,11 @@ import Data.IORef
 import System.Exit
 import Graphics.UI.GLUT.Callbacks.Window
 
-
 import System.Random
 import System.IO.Unsafe
 
 import Mapa
 import Environment
-
 
 type Heroi = ((Int, Int), Int)
 type Posicao = (Int, Int)
@@ -41,12 +39,6 @@ main = do
     attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi
     mainLoop
 
-
-
-
-
-
--- Gerar uma lista de numeros entre 0 e 4
 -- Gerar uma lista de numeros entre 0 e 4
 funcao :: Int -> Int -> Int -> Int -> Int -> Int -> Int
 funcao chao espinho flecha buraco chamas n
@@ -71,21 +63,6 @@ randomMapa n l chao espinho flecha buraco chamas = do
     return (map (funcao chao espinho flecha buraco chamas) linha : mapa) 
 
 
--- randomLinha :: Int -> IO([Int])
--- randomLinha 0 = return []
--- randomLinha n = do
---     r  <- randomRIO (0,4)
---     rs <- randomLinha (n-1)
---     return (r:rs) 
-
--- randomMapa :: Int -> Int -> IO [[Int]]
--- randomMapa 0 l = return []
--- randomMapa n l = do
---     linha <- randomLinha l
---     mapa <- randomMapa (n-1) l
---     return (linha:mapa) 
-
-
 display :: IORef [[Objeto]] -> IO ()
 display atualizar = do
     clear [ ColorBuffer]
@@ -94,7 +71,6 @@ display atualizar = do
     swapBuffers
 
 myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers position =
-    -- keyboardMouseCallback 
   case (key, keyState) of
     (SpecialKey KeyRight, Up) -> keyRight mapa heroi corCasa corHeroi
     (SpecialKey KeyLeft, Up) -> keyLeft mapa heroi corCasa corHeroi
@@ -105,28 +81,10 @@ myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers posit
 
 attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi = keyboardMouseCallback $= Just (myKeyboardMouseCallback mapa heroi corCasa corHeroi)
 
-
 -- Alterar a cor de uma casa no mapa
 setCasa :: [[Objeto]] -> Posicao -> CorMain -> ([[Objeto]], Objeto)
 setCasa mapa (x, y) cor = (take x mapa ++ [take y (mapa!!x) ++ [(\(nome, dano, cor) nova -> (nome,dano, nova)) (mapa!!x!!y) cor] ++ drop (y+1) (mapa!!x)] ++ drop (x+1) mapa, mapa!!x!!y)
 
--- Movimento para cima
--- moveKeyUp :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
--- moveKeyUp mapa heroi corCasa corHeroi = do
---     m <- get mapa
---     (x,y) <- get heroi
---     c <- get corCasa
---     ch <- get corHeroi
---     putStrLn ("Up")
---     if x > 0 then do
---             let (ma, _) = setCasa m (x,y) c
---             let (map, co) = setCasa ma (x-1,y) ch
---             corCasa $= co
---             mapa $= map
---             heroi $= (x-1,y)
---     else 
---         putStrLn "else"
---     postRedisplay Nothing
 
 keyUp :: IORef [[Objeto]] -> IORef Heroi -> IORef Objeto -> IORef CorMain -> IO ()
 keyUp mapa heroi corCasa corHeroi = do
@@ -206,4 +164,3 @@ keyRight mapa heroi corCasa corHeroi = do
     ((x2,y2), vida2) <- get heroi
     putStrLn ("x: " ++ show x2 ++ ", y: " ++ show y2 ++ ", vida: " ++ show vida2)
     postRedisplay Nothing
-

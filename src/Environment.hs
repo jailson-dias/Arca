@@ -9,7 +9,6 @@ import Graphics.UI.GLUT.Callbacks.Window
 import Control.Concurrent
 import Control.Concurrent.MVar
 
-
 import System.Random
 import System.IO.Unsafe
 
@@ -38,14 +37,6 @@ objetos = [
     ("Hole", 60, (1,1,0))
 	]
 
-
-
 getObjetos:: [[Int]] -> [[Objeto]]
 getObjetos [] = []
 getObjetos (linha:ls) = [objetos!!c | c <- linha ] : getObjetos ls
-    
-
-
-
-
-
