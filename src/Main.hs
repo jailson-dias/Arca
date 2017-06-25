@@ -27,8 +27,8 @@ main = do
     initialDisplayMode $= [DoubleBuffered]
     initialWindowSize $= Size 700 600
     createWindow "Hello Tste" -- Titulo da janela
-    heroi <- newIORef ((19::Int, 19::Int), 1500::Int)
-    corHeroi <- newIORef (1::GLfloat,0.5::GLfloat,0::GLfloat)
+    heroi <- newIORef ((19::Int, 19::Int), 300::Int)
+    corHeroi <- newIORef (1::GLfloat,1::GLfloat,1::GLfloat)
     corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
     venceu <- newIORef (1::Int)
 
@@ -40,7 +40,8 @@ main = do
     cd <- randomMapa 20 20 configuracaoNivel
     (h, _) <- get heroi
     c <- get corHeroi
-    let (ma, co) = setCasa (getObjetos cd) h c
+    let (m, _) = setCasa (getObjetos cd) (0,0) (0::GLfloat,0::GLfloat,0::GLfloat)
+    let (ma, co) = setCasa m h c
     mapa $= ma
     corCasa $= co
 
@@ -151,7 +152,7 @@ keyUp mapa heroi corCasa corHeroi venceu = do
         else 
             putStr ""
         ((x2,y2), vida2) <- get heroi
-        if vida <= 0 then 
+        if vida2 <= 0 then 
             venceu $= 0
         else 
             if x2 == 0 && y2 == 0 then 
@@ -182,7 +183,7 @@ keyDown mapa heroi corCasa corHeroi venceu = do
         else 
             putStr ""
         ((x2,y2), vida2) <- get heroi
-        if vida <= 0 then 
+        if vida2 <= 0 then 
             venceu $= 0
         else 
             if x2 == 0 && y2 == 0 then 
@@ -213,7 +214,7 @@ keyLeft mapa heroi corCasa corHeroi venceu = do
         else 
             putStr ""
         ((x2,y2), vida2) <- get heroi
-        if vida <= 0 then 
+        if vida2 <= 0 then 
             venceu $= 0
         else 
             if x2 == 0 && y2 == 0 then 
@@ -243,7 +244,7 @@ keyRight mapa heroi corCasa corHeroi venceu = do
         else 
             putStr ""
         ((x2,y2), vida2) <- get heroi
-        if vida <= 0 then 
+        if vida2 <= 0 then 
             venceu $= 0
         else 
             if x2 == 0 && y2 == 0 then 
