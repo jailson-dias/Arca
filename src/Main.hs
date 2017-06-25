@@ -6,17 +6,17 @@ import Control.Applicative
 import Data.IORef
 import System.Exit
 import Graphics.UI.GLUT.Callbacks.Window
+import Control.Concurrent
+import Control.Concurrent.MVar
 
 
 import System.Random
 import System.IO.Unsafe
 
 import Mapa
+import Environment
 
-type CorMain = (GLfloat, GLfloat, GLfloat)
 
-corMain :: GLfloat -> GLfloat -> GLfloat -> CorMain
-corMain r g b = (r, g, b)
 
 main :: IO ()
 main = do
@@ -29,26 +29,14 @@ main = do
     -- update rotation
     cd <- randomMapa 20 20
     -- putStrLn (show cd)
-    mapa $= getCores cd
+    mapa $= getObjetos cd
     -- putStrLn "main"
     attachMyKeyboardMouseCallback
     mainLoop
 
 
 
-cores :: [CorMain]
-cores = [
-    corMain 0 0 0,
-    corMain 1 0 0,
-    corMain 0 1 0,
-    corMain 0 0 1,
-    corMain 1 1 1
-    ] 
 
-    
-getCores:: [[Int]] -> [[CorMain]]
-getCores [] = []
-getCores (linha:ls) = [ cores!!c | c <- linha ] : getCores ls
 
 
 -- Gerar uma lista de numeros entre 0 e 4
@@ -68,18 +56,7 @@ randomMapa n l = do
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-display :: IORef [[CorMain]] -> IO ()
+display :: IORef [[Objeto]] -> IO ()
 display atualizar = do
     clear [ ColorBuffer]
     loadIdentity
@@ -112,7 +89,7 @@ attachMyKeyboardMouseCallback = keyboardMouseCallback $= Just myKeyboardMouseCal
 -- myPoints = [(sin(2*pi * k / 3), cos(2*pi * k / 3), 0.0) | k <- [1..3]]
 
 
-teste :: IORef [[CorMain]] -> IO ()
+teste :: IORef [[Objeto]] -> IO ()
 teste mapa = do
     m <- get mapa
     putStrLn (show m)
