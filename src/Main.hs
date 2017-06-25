@@ -18,6 +18,7 @@ type Posicao = (Int, Int)
 type CorMain = (GLfloat,GLfloat,GLfloat)
 type Nivel = (Char)
 type ConfiguracaoNivel = (Int, Int, Int, Int, Int)
+type Pocao = (Int)
 
 main :: IO ()
 main = do
@@ -28,6 +29,7 @@ main = do
     heroi <- newIORef ((19::Int, 19::Int), 300::Int)
     corHeroi <- newIORef (1::GLfloat,0.5::GLfloat,0::GLfloat)
     corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
+    pocao <- newIORef (3::Int)
 
     nivelJogo <- newIORef ('0'::Char)
     configuracaoNivel <- newIORef (0::Int, 0::Int, 0::Int, 0::Int, 0::Int)
@@ -42,7 +44,7 @@ main = do
     corCasa $= co
 
     displayCallback $= (display mapa)
-    attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi
+    attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi pocao
     mainLoop
 
 -- Gerar uma lista de numeros entre 0 e 4
@@ -77,8 +79,9 @@ display atualizar = do
     mapa atualizar
     swapBuffers
 
-myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers position =
+myKeyboardMouseCallback mapa heroi corCasa corHeroi pocao key keyState modifiers position =
   case (key, keyState) of
+    (Char 'p', Up) -> utilizarPocao pocao heroi
     (SpecialKey KeyRight, Up) -> keyRight mapa heroi corCasa corHeroi
     (SpecialKey KeyLeft, Up) -> keyLeft mapa heroi corCasa corHeroi
     (SpecialKey KeyUp, Up) -> keyUp mapa heroi corCasa corHeroi
@@ -86,7 +89,24 @@ myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers posit
 
     _ -> return () -- ignore other buttons
 
-attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi = keyboardMouseCallback $= Just (myKeyboardMouseCallback mapa heroi corCasa corHeroi)
+attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi pocao = keyboardMouseCallback $= Just (myKeyboardMouseCallback mapa heroi corCasa corHeroi pocao)
+
+utilizarPocao :: IORef Pocao -> IORef Heroi -> IO()
+utilizarPocao pocao heroi
+ = do
+     p <- get pocao
+     ((a,b), vida) <- get heroi
+     if (p > 0) then
+         do
+             pocao $= (p - 1)
+             putStrLn("Mais 20% de vida!")
+             putStrLn("Sua vida agora é: " ++ show(vida + 60))
+             heroi $= ((a,b), vida + 60)
+             return()
+     else
+         do
+             putStrLn("Não é possível utilizar mais poção!")
+             return()
 
 --usuario escolhe o nivel do jogo [1,2,3]
 escolhaNivel :: IORef Nivel -> IORef ConfiguracaoNivel -> IO()
