@@ -30,7 +30,7 @@ main = do
     corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
 
     mapa <- newIORef []
-    cd <- randomMapa 20 20
+    cd <- randomMapa 20 20 35 65 85 95 100
     (h, _) <- get heroi
     c <- get corHeroi
     let (ma, co) = setCasa (getObjetos cd) h c
@@ -47,19 +47,43 @@ main = do
 
 
 -- Gerar uma lista de numeros entre 0 e 4
-randomLinha :: Int -> IO([Int])
+-- Gerar uma lista de numeros entre 0 e 4
+funcao :: Int -> Int -> Int -> Int -> Int -> Int -> Int
+funcao chao espinho flecha buraco chamas n
+ | n >= 0 && n <= chao = 0
+ | n > chao && n <= espinho = 1
+ | n > espinho && n <= flecha = 2
+ | n > flecha && n <= buraco = 3
+ | n > buraco && n <= chamas = 4
+
+randomLinha :: Int -> IO [Int]
 randomLinha 0 = return []
 randomLinha n = do
-    r  <- randomRIO (0,4)
+    r  <- randomRIO (0,100)
     rs <- randomLinha (n-1)
     return (r:rs) 
 
-randomMapa :: Int -> Int -> IO [[Int]]
-randomMapa 0 l = return []
-randomMapa n l = do
+randomMapa :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO [[Int]]
+randomMapa 0 l _ _ _ _ _= return []
+randomMapa n l chao espinho flecha buraco chamas = do
     linha <- randomLinha l
-    mapa <- randomMapa (n-1) l
-    return (linha:mapa) 
+    mapa <- randomMapa (n-1) l chao espinho flecha buraco chamas
+    return (map (funcao chao espinho flecha buraco chamas) linha : mapa) 
+
+
+-- randomLinha :: Int -> IO([Int])
+-- randomLinha 0 = return []
+-- randomLinha n = do
+--     r  <- randomRIO (0,4)
+--     rs <- randomLinha (n-1)
+--     return (r:rs) 
+
+-- randomMapa :: Int -> Int -> IO [[Int]]
+-- randomMapa 0 l = return []
+-- randomMapa n l = do
+--     linha <- randomLinha l
+--     mapa <- randomMapa (n-1) l
+--     return (linha:mapa) 
 
 
 display :: IORef [[Objeto]] -> IO ()
