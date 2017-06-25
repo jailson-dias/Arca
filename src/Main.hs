@@ -16,6 +16,8 @@ import Environment
 type Heroi = ((Int, Int), Int)
 type Posicao = (Int, Int)
 type CorMain = (GLfloat,GLfloat,GLfloat)
+type Nivel = (Char)
+type ConfiguracaoNivel = (Int, Int, Int, Int, Int)
 
 main :: IO ()
 main = do
@@ -27,8 +29,12 @@ main = do
     corHeroi <- newIORef (1::GLfloat,0.5::GLfloat,0::GLfloat)
     corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
 
+    nivelJogo <- newIORef ('0'::Char)
+    configuracaoNivel <- newIORef (0::Int, 0::Int, 0::Int, 0::Int, 0::Int)
+    escolhaNivel nivelJogo configuracaoNivel
+
     mapa <- newIORef []
-    cd <- randomMapa 20 20 35 65 85 95 100
+    cd <- randomMapa 20 20 configuracaoNivel
     (h, _) <- get heroi
     c <- get corHeroi
     let (ma, co) = setCasa (getObjetos cd) h c
@@ -55,11 +61,12 @@ randomLinha n = do
     rs <- randomLinha (n-1)
     return (r:rs) 
 
-randomMapa :: Int -> Int -> Int -> Int -> Int -> Int -> Int -> IO [[Int]]
-randomMapa 0 l _ _ _ _ _= return []
-randomMapa n l chao espinho flecha buraco chamas = do
+randomMapa :: Int -> Int -> IORef ConfiguracaoNivel -> IO [[Int]]
+randomMapa 0 l _ = return []
+randomMapa n l configNivel = do
+    (chao, espinho, flecha, buraco, chamas) <- get configNivel
     linha <- randomLinha l
-    mapa <- randomMapa (n-1) l chao espinho flecha buraco chamas
+    mapa <- randomMapa (n-1) l configNivel
     return (map (funcao chao espinho flecha buraco chamas) linha : mapa) 
 
 
@@ -80,6 +87,34 @@ myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers posit
     _ -> return () -- ignore other buttons
 
 attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi = keyboardMouseCallback $= Just (myKeyboardMouseCallback mapa heroi corCasa corHeroi)
+
+--usuario escolhe o nivel do jogo [1,2,3]
+escolhaNivel :: IORef Nivel -> IORef ConfiguracaoNivel -> IO()
+escolhaNivel nivelJogo configuracaoNivel = do
+     nivel <- getChar
+
+     case nivel of
+         '1' -> do
+             nivelJogo $= nivel
+             putStrLn("Nível escolhido: " ++ show nivel)
+             configuracaoNivel $= (50, 75, 89, 97, 100) --porcentagem somada uma a uma até 100%
+             return()
+         '2' -> do
+             nivelJogo $= nivel
+             putStrLn("Nível escolhido: " ++ show nivel)
+             configuracaoNivel $= (38, 66, 85, 94, 100)
+             return()
+         '3' -> do
+             nivelJogo $= nivel
+             putStrLn("Nível escolhido: " ++ show nivel)
+             configuracaoNivel $= (28, 55, 75, 88, 100)
+             return()
+         x | x >= ' ' -> do
+             escolhaNivel nivelJogo configuracaoNivel
+         _ -> do
+             putStrLn("Nível escolhido inválido.")
+             escolhaNivel nivelJogo configuracaoNivel
+
 
 -- Alterar a cor de uma casa no mapa
 setCasa :: [[Objeto]] -> Posicao -> CorMain -> ([[Objeto]], Objeto)
