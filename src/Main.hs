@@ -27,7 +27,7 @@ main = do
     _ <- getArgsAndInitialize
     initialDisplayMode $= [DoubleBuffered]
     initialWindowSize $= Size 700 600
-    createWindow "Hello Tste" -- Titulo da janela
+    createWindow "Arca v0.1" -- Titulo da janela
     heroi <- newIORef ((19::Int, 19::Int), 300::Int)
     corHeroi <- newIORef (1::GLfloat,1::GLfloat,1::GLfloat)
     corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
