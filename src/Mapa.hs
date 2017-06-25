@@ -7,17 +7,14 @@ module Mapa where
     -- import Control.Applicative
     import System.IO.Unsafe
     import System.Random
+    import Environment
 
-    type Cor = (GLfloat, GLfloat, GLfloat)
-    type Vertice = (GLfloat, GLfloat)
+    
+    
     
     pinta = True
 
-    vertice :: GLfloat -> GLfloat -> Vertice
-    vertice x y = (x, y)
 
-    cor :: GLfloat -> GLfloat -> GLfloat -> Cor
-    cor r g b = (r, g, b)
 
     -- cores :: [Cor]
     -- cores = [
@@ -30,7 +27,7 @@ module Mapa where
 
 
     -- Desenha uma linha do mapa
-    linha :: Vertice -> Vertice -> Vertice -> Vertice -> [Cor] -> IO ()
+    linha :: Vertice -> Vertice -> Vertice -> Vertice -> [Objeto] -> IO ()
     linha v1 v2 v3 v4 [cor] = desenhaQuadrado cor v1 v2 v3 v4
     linha v1 v2 v3 v4 (cor:ls) = do 
         desenhaQuadrado cor v1 v2 v3 v4
@@ -38,7 +35,7 @@ module Mapa where
             where mais = (\(vx,vy) x -> (vx + x, vy))
 
     -- Chama a função para desenhar cada linha do mapa
-    desenhaMapa :: Vertice -> Vertice -> Vertice -> Vertice -> [[Cor]] -> IO ()
+    desenhaMapa :: Vertice -> Vertice -> Vertice -> Vertice -> [[Objeto]] -> IO ()
     desenhaMapa v1 v2 v3 v4 [cor] = linha v1 v2 v3 v4 cor
     desenhaMapa v1 v2 v3 v4 (cor:ls) = do 
         linha v1 v2 v3 v4 cor
@@ -67,7 +64,7 @@ module Mapa where
 
 
     -- Desenha o mapa inicial do jogo
-    mapa :: IORef [[Cor]] -> IO ()
+    mapa :: IORef [[Objeto]] -> IO ()
     mapa atualizar = do
         cd <- get atualizar
         -- putStrLn (a)
@@ -95,26 +92,36 @@ module Mapa where
     vertex2f (x, y) = vertex $ Vertex2 x y
 
 
+    -- desenhaQuadradoAux :: Cor -> Vertice -> Vertice -> Vertice -> Vertice -> IO ()
+    -- desenhaQuadradoAux cor v1 v2 v3 v4 = do
+    --         color3f cor
+    --         vertex2f v1
+    --         vertex2f v2
+    --         vertex2f v3
+    --         vertex2f v4
+
     -- Desenha apenas um quadrado
-    desenhaQuadrado :: Cor -> Vertice -> Vertice -> Vertice -> Vertice -> IO ()
-    desenhaQuadrado cor v1 v2 v3 v4 = do
+    desenhaQuadrado :: Objeto -> Vertice -> Vertice -> Vertice -> Vertice -> IO ()
+    desenhaQuadrado (_, _, cor) v1 v2 v3 v4 = do
             color3f cor
             vertex2f v1
             vertex2f v2
             vertex2f v3
             vertex2f v4
+           
 
 
+    
 
 
 
 
     -- Gerar lista de cores (Provisorio)
-    corLinha :: Int -> [Cor]
-    corLinha 1 = cor 1 0 0 : []
-    corLinha q = cor 0 0 1 : corLinha (q-1)
+    --corLinha :: Int -> [Cor]
+    --corLinha 1 = cor 1 0 0 : []
+    --corLinha q = cor 0 0 1 : corLinha (q-1)
 
-    corMapa :: Int -> Int -> [[Cor]]
-    corMapa 1 l = corLinha l : []
-    corMapa q l = corLinha l : corMapa (q-1) l
+    -- corMapa :: Int -> Int -> [[Cor]]
+    -- corMapa 1 l = corLinha l : []
+    -- corMapa q l = corLinha l : corMapa (q-1) l
 

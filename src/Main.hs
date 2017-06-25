@@ -6,21 +6,18 @@ import Control.Applicative
 import Data.IORef
 import System.Exit
 import Graphics.UI.GLUT.Callbacks.Window
--- import Graphics.UI.GLUT.Window
--- import Graphics.Rendering.OpenGL.GL.CoordTrans ( Position(..), Size(..) )
 
 
 import System.Random
 import System.IO.Unsafe
 
 import Mapa
+import Environment
 
-type CorMain = (GLfloat, GLfloat, GLfloat)
 
+type Heroi = ((Int, Int), Int)
 type Posicao = (Int, Int)
-
-corMain :: GLfloat -> GLfloat -> GLfloat -> CorMain
-corMain r g b = (r, g, b)
+type CorMain = (GLfloat,GLfloat,GLfloat)
 
 main :: IO ()
 main = do
@@ -28,16 +25,15 @@ main = do
     initialDisplayMode $= [DoubleBuffered]
     initialWindowSize $= Size 700 600
     createWindow "Hello Tste" -- Titulo da janela
-    heroi <- newIORef (19::Int, 19::Int)
+    heroi <- newIORef ((19::Int, 19::Int), 300::Int)
     corHeroi <- newIORef (1::GLfloat,0.5::GLfloat,0::GLfloat)
-    corCasa <- newIORef (1::GLfloat,0.5::GLfloat,0::GLfloat)
+    corCasa <- newIORef ("",5::Int,(1::GLfloat,0.5::GLfloat,0::GLfloat))
 
     mapa <- newIORef []
     cd <- randomMapa 20 20
-
-    h <- get heroi
+    (h, _) <- get heroi
     c <- get corHeroi
-    let (ma, co) = setCasa (getCores cd) h c
+    let (ma, co) = setCasa (getObjetos cd) h c
     mapa $= ma
     corCasa $= co
 
@@ -47,19 +43,7 @@ main = do
 
 
 
-cores :: [CorMain]
-cores = [
-    corMain 0 0 0,
-    corMain 1 0 0,
-    corMain 0 1 0,
-    corMain 0 0 1,
-    corMain 1 1 1
-    ] 
 
-    
-getCores:: [[Int]] -> [[CorMain]]
-getCores [] = []
-getCores (linha:ls) = [ cores!!c | c <- linha ] : getCores ls
 
 
 -- Gerar uma lista de numeros entre 0 e 4
@@ -78,13 +62,12 @@ randomMapa n l = do
     return (linha:mapa) 
 
 
-display :: IORef [[CorMain]] -> IO ()
+display :: IORef [[Objeto]] -> IO ()
 display atualizar = do
     clear [ ColorBuffer]
     loadIdentity
     mapa atualizar
     swapBuffers
-
 
 myKeyboardMouseCallback mapa heroi corCasa corHeroi key keyState modifiers position =
     -- keyboardMouseCallback 
@@ -100,92 +83,103 @@ attachMyKeyboardMouseCallback mapa heroi corCasa corHeroi = keyboardMouseCallbac
 
 
 -- Alterar a cor de uma casa no mapa
-setCasa :: [[CorMain]] -> Posicao -> CorMain -> ([[CorMain]], CorMain)
-setCasa mapa (x, y) cor = (take x mapa ++ [take y (mapa!!x) ++ [cor] ++ drop (y+1) (mapa!!x)] ++ drop (x+1) mapa, mapa!!x!!y)
+setCasa :: [[Objeto]] -> Posicao -> CorMain -> ([[Objeto]], Objeto)
+setCasa mapa (x, y) cor = (take x mapa ++ [take y (mapa!!x) ++ [(\(nome, dano, cor) nova -> (nome,dano, nova)) (mapa!!x!!y) cor] ++ drop (y+1) (mapa!!x)] ++ drop (x+1) mapa, mapa!!x!!y)
 
 -- Movimento para cima
-keyUp :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
+-- moveKeyUp :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
+-- moveKeyUp mapa heroi corCasa corHeroi = do
+--     m <- get mapa
+--     (x,y) <- get heroi
+--     c <- get corCasa
+--     ch <- get corHeroi
+--     putStrLn ("Up")
+--     if x > 0 then do
+--             let (ma, _) = setCasa m (x,y) c
+--             let (map, co) = setCasa ma (x-1,y) ch
+--             corCasa $= co
+--             mapa $= map
+--             heroi $= (x-1,y)
+--     else 
+--         putStrLn "else"
+--     postRedisplay Nothing
+
+keyUp :: IORef [[Objeto]] -> IORef Heroi -> IORef Objeto -> IORef CorMain -> IO ()
 keyUp mapa heroi corCasa corHeroi = do
     m <- get mapa
-    (x,y) <- get heroi
-    c <- get corCasa
+    ((x,y), vida) <- get heroi
+    (_,_,c) <- get corCasa
     ch <- get corHeroi
-    putStrLn ("Up")
+    -- putStrLn ("Up")
     if x > 0 then do
             let (ma, _) = setCasa m (x,y) c
-            let (map, co) = setCasa ma (x-1,y) ch
-            corCasa $= co
+            let (map, (nome, d, cor)) = setCasa ma (x-1,y) ch
+            corCasa $= (nome, d, cor)
             mapa $= map
-            heroi $= (x-1,y)
+            heroi $= ((x-1,y), vida - d)
     else 
-        putStrLn "else"
+        putStr ""
+    ((x2,y2), vida2) <- get heroi
+    putStrLn ("x: " ++ show x2 ++ ", y: " ++ show y2 ++ ", vida: " ++ show vida2)
     postRedisplay Nothing
 
 -- Movimento para baixo
-keyDown :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
+keyDown :: IORef [[Objeto]] -> IORef Heroi -> IORef Objeto -> IORef CorMain -> IO ()
 keyDown mapa heroi corCasa corHeroi = do
     m <- get mapa
-    (x,y) <- get heroi
-    c <- get corCasa
+    ((x,y), vida) <- get heroi
+    (_,_,c) <- get corCasa
     ch <- get corHeroi
-    putStrLn ("Down")
+    -- putStrLn ("Down")
     if x < 19 then do
             let (ma, _) = setCasa m (x,y) c
-            let (map, co) = setCasa ma (x+1,y) ch
-            corCasa $= co
+            let (map, (nome, d, cor)) = setCasa ma (x+1,y) ch
+            corCasa $= (nome, d, cor)
             mapa $= map
-            heroi $= (x+1,y)
+            heroi $= ((x+1,y), vida - d)
     else 
-        putStrLn "else"
+        putStr ""
+    ((x2,y2), vida2) <- get heroi
+    putStrLn ("x: " ++ show x2 ++ ", y: " ++ show y2 ++ ", vida: " ++ show vida2)
     postRedisplay Nothing
 
 -- Movimento para esquerda
-keyLeft :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
+keyLeft :: IORef [[Objeto]] -> IORef Heroi -> IORef Objeto -> IORef CorMain -> IO ()
 keyLeft mapa heroi corCasa corHeroi = do
     m <- get mapa
-    (x,y) <- get heroi
-    c <- get corCasa
+    ((x,y), vida) <- get heroi
+    (_,_,c) <- get corCasa
     ch <- get corHeroi
-    putStrLn ("Left")
+    -- putStrLn ("Left")
     if y > 0 then do
             let (ma, _) = setCasa m (x,y) c
-            let (map, co) = setCasa ma (x,y-1) ch
-            corCasa $= co
+            let (map, (nome, d, cor)) = setCasa ma (x,y-1) ch
+            corCasa $= (nome, d, cor)
             mapa $= map
-            heroi $= (x,y-1)
+            heroi $= ((x,y-1), vida - d)
     else 
-        putStrLn "else"
+        putStr ""
+    ((x2,y2), vida2) <- get heroi
+    putStrLn ("x: " ++ show x2 ++ ", y: " ++ show y2 ++ ", vida: " ++ show vida2)
     postRedisplay Nothing
 
 -- Movimento para direita
-keyRight :: IORef [[CorMain]] -> IORef Posicao -> IORef CorMain -> IORef CorMain -> IO ()
+keyRight :: IORef [[Objeto]] -> IORef Heroi -> IORef Objeto -> IORef CorMain -> IO ()
 keyRight mapa heroi corCasa corHeroi = do
     m <- get mapa
-    (x,y) <- get heroi
-    c <- get corCasa
+    ((x,y), vida) <- get heroi
+    (_,_,c) <- get corCasa
     ch <- get corHeroi
-    putStrLn ("Right")
+    -- putStrLn ("Right")
     if y < 19 then do
             let (ma, _) = setCasa m (x,y) c
-            let (map, co) = setCasa ma (x,y+1) ch
-            corCasa $= co
+            let (map, (nome, d, cor)) = setCasa ma (x,y+1) ch
+            corCasa $= (nome, d, cor)
             mapa $= map
-            heroi $= (x,y+1)
+            heroi $= ((x,y+1), vida - d)
     else 
-        putStrLn "else"
+        putStr ""
+    ((x2,y2), vida2) <- get heroi
+    putStrLn ("x: " ++ show x2 ++ ", y: " ++ show y2 ++ ", vida: " ++ show vida2)
     postRedisplay Nothing
 
-
-
-
-
-
-
-
-    {--
-
-        Int->Int->Int
-        Int->Bool
-
-
-        --}
